@@ -4,6 +4,13 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no" />
 <meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#0a1738" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="#30 Free Throws" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="manifest.webmanifest" />
 <link rel="icon" href="data:," />
 <title>#30 Free Throws</title>
 <style>
@@ -21,13 +28,14 @@
     --red:#ff5d5d;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ height:100%; -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  html,body{ height:100%; -webkit-text-size-adjust:100%; text-size-adjust:100%; overscroll-behavior:none; }
   body{
     margin:0;
     font-family:"Arial Rounded MT Bold","Arial Black",Arial,sans-serif;
     background:var(--navy-deep);
     color:var(--ink);
     overflow:hidden;
+    overscroll-behavior:none;
     user-select:none;
     -webkit-user-select:none;
     touch-action:manipulation;
@@ -143,6 +151,20 @@
     white-space:nowrap; z-index:5;
   }
   .twist-badge[hidden]{ display:none; }
+  .wind-badge{
+    position:absolute; top:46px; left:50%; transform:translateX(-50%);
+    display:flex; align-items:center; gap:8px;
+    background:rgba(5,10,28,.78);
+    border:2px solid rgba(255,255,255,.3);
+    font-size:13px; font-weight:900; letter-spacing:.6px;
+    color:var(--ink);
+    padding:5px 12px; border-radius:999px;
+    white-space:nowrap; z-index:5;
+  }
+  .wind-badge[hidden]{ display:none; }
+  .wind-badge .wind-lab{ font-size:10px; letter-spacing:1.6px; color:var(--ink-dim); }
+  .wind-badge .wind-arrow{ color:var(--gold); font-size:15px; letter-spacing:2px; line-height:1; }
+  .wind-badge .wind-arrow.calm{ color:var(--ink-dim); }
   .feedback{
     position:absolute; top:29%; left:50%;
     transform:translate(-50%,-50%) scale(.6);
@@ -451,6 +473,22 @@
       </g>
       <!-- Wall padding line -->
       <rect x="0" y="118" width="400" height="6" fill="#f2b01e" opacity=".55"/>
+      <!-- Wind pennants (Windy Gym Night only): cloth streams with the
+           draft and hangs limp when it's calm; JS animates the flutter -->
+      <g id="windFlags" style="display:none">
+        <g transform="translate(48,126)">
+          <line x1="0" y1="0" x2="0" y2="36" stroke="#8a93a6" stroke-width="3" stroke-linecap="round"/>
+          <path class="flag-cloth" d="M0 3 L27 9 L0 16 Z" fill="#f2b01e"/>
+        </g>
+        <g transform="translate(200,126)">
+          <line x1="0" y1="0" x2="0" y2="36" stroke="#8a93a6" stroke-width="3" stroke-linecap="round"/>
+          <path class="flag-cloth" d="M0 3 L27 9 L0 16 Z" fill="#e2543e"/>
+        </g>
+        <g transform="translate(352,126)">
+          <line x1="0" y1="0" x2="0" y2="36" stroke="#8a93a6" stroke-width="3" stroke-linecap="round"/>
+          <path class="flag-cloth" d="M0 3 L27 9 L0 16 Z" fill="#f2b01e"/>
+        </g>
+      </g>
       <!-- Court floor -->
       <rect x="0" y="330" width="400" height="130" fill="#c98a3d"/>
       <rect x="0" y="330" width="400" height="130" fill="#d99b47" opacity=".45"/>
@@ -482,11 +520,29 @@
           <path class="net-cross" d="M325 254 L348 254"/>
           <path class="net-cross" d="M329 265 L345 265"/>
         </g>
-        <!-- defender hand (only on defender levels) -->
+        <!-- Blocker #32 (defender levels only): one long arm pivots at the
+             shoulder (382,330) so the hand sweeps back and forth ACROSS the
+             rim opening (rim centre 336,238) and jumps as it crosses the
+             middle. JS rotates/jumps the whole #defHand group each frame
+             and sets defCovering while the hand is over the rim — shoot()
+             swats any would-be score released into a covered rim. -->
         <g id="defender" style="display:none">
-          <path d="M368 330 L360 268" stroke="#8a5a3b" stroke-width="11" stroke-linecap="round"/>
-          <g id="defHand" fill="#a06a42">
-            <path d="M360 272 c-3-14 1-24 5-24 c2 0 3 3 3 7 c2-5 4-8 6-8 c2 0 3 4 2 9 c3-3 6-4 7-2 c1 2-1 6-4 9 c3-1 5 0 5 2 c0 4-5 7-10 8 c-6 1-12 0-14-1z"/>
+          <g id="defHand">
+            <!-- arm: wrist (350,260) down to the shoulder at the floor -->
+            <path d="M382 330 L350 260" stroke="#8a5a3b" stroke-width="13" stroke-linecap="round"/>
+            <!-- #32 sleeve over the lower arm -->
+            <path d="M382 330 L366 296" stroke="#e2543e" stroke-width="19" stroke-linecap="round"/>
+            <circle cx="383" cy="322" r="12" fill="#e2543e" stroke="#ffffff" stroke-width="2"/>
+            <text x="383" y="326" text-anchor="middle" font-size="10" font-weight="900" fill="#ffffff" font-family="Arial Rounded MT Bold, Arial, sans-serif">32</text>
+            <!-- hand: fingers + palm centred over the rim opening -->
+            <g stroke="#a06a42" stroke-width="7.5" stroke-linecap="round">
+              <line x1="330" y1="246" x2="325" y2="222"/>
+              <line x1="338" y1="243" x2="336" y2="218"/>
+              <line x1="346" y1="243" x2="348" y2="219"/>
+              <line x1="354" y1="246" x2="360" y2="226"/>
+              <line x1="356" y1="255" x2="366" y2="247"/>
+            </g>
+            <ellipse cx="342" cy="252" rx="16" ry="12" fill="#a06a42"/>
           </g>
         </g>
       </g>
@@ -583,6 +639,11 @@
     </svg>
 
     <div class="twist-badge" id="twistBadge" hidden></div>
+    <div class="wind-badge" id="windBadge" hidden role="status" aria-label="Wind for this shot">
+      <span class="wind-lab">WIND</span>
+      <span class="wind-arrow" id="windArrow">—</span>
+      <span class="wind-str" id="windStr">Calm</span>
+    </div>
     <div class="feedback" id="feedback"></div>
   </div>
 
@@ -591,7 +652,7 @@
     <div class="meter-label">
       <span>POWER</span>
       <span class="hot-badge" id="hotBadge" hidden>🔥 Zone: TIGHT</span>
-      <span class="zone-hint">Stop the needle in the green!</span>
+      <span class="zone-hint" id="zoneHint">Stop the needle in the green!</span>
     </div>
     <div class="meter" id="meter">
       <div class="zone" id="meterZone"></div>
@@ -673,8 +734,16 @@
                       sideways by this many SVG units (try 10–26).
      wind             -1..1 sideways drift applied to the ball in flight
                       (negative pushes left/short, positive right/long).
-     defender         true = a waving defender hand appears by the hoop
-                      and narrows the effective swish zone.
+                      On a windVaries level this is the MAX draft strength.
+     windVaries       true = the draft is re-rolled before every shot
+                      (direction + strength, some shots near-calm, some
+                      strong). The pennant flags and the wind badge show
+                      the current draft, and the sweet spot shifts against
+                      it — the player aims off the green to compensate.
+     defender         true = Blocker #32's arm sweeps and jumps across
+                      the rim, narrows the effective swish zone, and swats
+                      any would-be score released while his hand covers
+                      the rim — time the release between blocks.
      pointsMultiplier Multiplies all points scored on this level.
    ===================================================================== */
 var LEVELS = [
@@ -685,6 +754,27 @@ var LEVELS = [
     meterSpeed: 0.55,
     movingHoop: 0,
     wind: 0,
+    defender: false,
+    pointsMultiplier: 1
+  },
+  {
+    name: "Blocker #32",
+    twist: "Blocker #32 — the defender jumps and waves across the lane; time the shot between blocks",
+    zoneWidth: 0.28,
+    meterSpeed: 0.60,
+    movingHoop: 0,
+    wind: 0,
+    defender: true,
+    pointsMultiplier: 1
+  },
+  {
+    name: "Windy Gym Night",
+    twist: "Windy Gym Night — a gym draft drifts the ball sideways; read the flags and aim off the wind",
+    zoneWidth: 0.30,
+    meterSpeed: 0.55,
+    movingHoop: 0,
+    wind: 1,
+    windVaries: true,
     defender: false,
     pointsMultiplier: 1
   }
@@ -977,6 +1067,9 @@ var chipsEl = $("levelChips"), hudLevelName = $("hudLevelName"),
     overlay = $("overlay"), toastEl = $("toast"), soundBtn = $("soundBtn"),
     refLayer = $("refLayer"), refEl = $("referee"),
     refLegBack = $("refLegBack"), refLegFront = $("refLegFront");
+var windBadge = $("windBadge"), windArrowEl = $("windArrow"), windStrEl = $("windStr"),
+    zoneHintEl = $("zoneHint"), windFlagsEl = $("windFlags");
+var flagCloths = windFlagsEl ? windFlagsEl.querySelectorAll(".flag-cloth") : [];
 var trophyBtn = $("trophyBtn"), topLineEl = $("topLine"),
     lbOverlay = $("lbOverlay"), lbListEl = $("lbList"), lbStatusEl = $("lbStatus"),
     lbEntryEl = $("lbEntry"), lbNoteEl = $("lbNote"), lbFormEl = $("lbForm"),
@@ -993,6 +1086,10 @@ var ballState = "held";           // held | flying | done
 var ball = { x:118, y:196, r:0 };
 var flight = null;                // active flight plan
 var hoopOffset = 0, hoopPhase = Math.random()*Math.PI*2;
+/* Blocker #32 state, refreshed every frame in loop() while a defender
+   level is active: defAngle = arm sweep in degrees, defJumpY = jump
+   offset, defCovering = true while his hand is over the rim opening. */
+var defAngle = 0, defJumpY = 0, defCovering = false;
 var roundOver = false, lastT = 0, toastTimer = null;
 var pendingPrevStreak = 0;   // streak before the current shot (for crowd "aww")
 /* Hot start: 3-for-3 to open a round tightens the zone for the rest of it */
@@ -1006,11 +1103,79 @@ var refWalk = null;               // active crossing: { x, dir, phase }
 var IDLE_REF_SECONDS = 5;
 var idleTime = 0;                 // seconds accumulated in this idle stretch
 var idleFired = false;            // true once idle has fired for this stretch
+/* Wind (Windy Gym Night): the draft for the shot about to be taken,
+   re-rolled every time the ball is ready. -1..1, sign = direction the
+   ball drifts (negative left, positive right), magnitude = strength. */
+var shotWind = 0;
+var WIND_AIM_SHIFT = 0.14;        // sweet-spot shift at full-strength draft, as a meter fraction
 
 /* Hoop geometry in SVG units */
 var HOOP = { rimX:336, rimY:238, boardX:322 };
 
 function zoneCenter(){ return 0.5; }
+
+/* ---------- Wind (variable-draft levels) ---------- */
+function currentWind(){
+  /* The draft acting on the next/in-flight shot. */
+  if(level.windVaries) return shotWind;
+  return level.wind || 0;
+}
+function rollWind(){
+  /* New draft for the next shot: random direction, and a strength mix of
+     near-calm (~1 shot in 4), a working breeze, and strong gusts. Scaled
+     by the level's wind field, which caps the draft at full strength. */
+  if(!level.windVaries){ shotWind = level.wind || 0; updateWindUI(); return; }
+  var r = Math.random();
+  var mag;
+  if(r < 0.25) mag = Math.random() * 0.15;            /* near-calm */
+  else if(r < 0.72) mag = 0.2 + Math.random() * 0.4;  /* light–moderate */
+  else mag = 0.65 + Math.random() * 0.35;             /* strong gust */
+  var dir = Math.random() < 0.5 ? -1 : 1;
+  shotWind = dir * mag * (level.wind || 0);
+  if(Math.abs(shotWind) < 0.08) shotWind = 0;         /* call it calm */
+  updateWindUI();
+}
+function windTier(w){
+  var a = Math.abs(w);
+  if(a < 0.08) return { word: "Calm", arrows: 0 };
+  if(a < 0.35) return { word: "Light", arrows: 1 };
+  if(a < 0.65) return { word: "Breezy", arrows: 2 };
+  return { word: "Strong", arrows: 3 };
+}
+function updateWindUI(){
+  var show = !!level.windVaries;
+  if(windFlagsEl) windFlagsEl.style.display = show ? "" : "none";
+  if(!windBadge) return;
+  windBadge.hidden = !show;
+  if(!show) return;
+  var w = shotWind, tier = windTier(w);
+  if(tier.arrows === 0){
+    windArrowEl.textContent = "—";
+    windArrowEl.classList.add("calm");
+  } else {
+    var ch = w > 0 ? "▶" : "◀", s = "";
+    for(var i = 0; i < tier.arrows; i++) s += ch;
+    windArrowEl.textContent = s;
+    windArrowEl.classList.remove("calm");
+  }
+  windStrEl.textContent = tier.word;
+  windBadge.setAttribute("aria-label",
+    "Wind for this shot: " + tier.word +
+    (tier.arrows === 0 ? "" : (w > 0 ? ", blowing right" : ", blowing left")));
+}
+function updateWindFlags(now){
+  /* Pennant flutter: cloth streams toward where the draft blows, flutters
+     harder the stronger it is, and hangs limp when calm. */
+  if(!level.windVaries || !flagCloths.length) return;
+  var w = shotWind, a = Math.abs(w);
+  var lift = Math.min(a * 1.7, 1);                    /* 0 = limp, 1 = fully streaming */
+  var droop = (1 - lift) * 58;                        /* hang angle when calm */
+  var flutter = Math.sin(now / 110) * (2 + a * 9);    /* degrees of flap */
+  var sx = w < -0.02 ? -1 : 1;
+  var tf = "scale(" + sx + ",1) rotate(" + (droop + flutter).toFixed(1) + ")";
+  for(var i = 0; i < flagCloths.length; i++) flagCloths[i].setAttribute("transform", tf);
+}
+
 function effectiveZoneWidth(){
   var w = level.zoneWidth;
   if(level.defender) w *= 0.7;
@@ -1317,6 +1482,12 @@ function startRound(){
   lbOverlay.classList.remove("open"); lbOverlay.classList.remove("shown");
   shootBtn.disabled = false;
   defenderEl.style.display = level.defender ? "" : "none";
+  rollWind();   /* first draft of the round (no-op display on calm levels) */
+  if(zoneHintEl) zoneHintEl.textContent = level.windVaries
+    ? "Wind drifts the shot — aim off the green to match it!"
+    : level.defender
+      ? "Time your shot when #32's hand is off the rim!"
+      : "Stop the needle in the green!";
   if(level.twist){
     twistBadge.textContent = "Twist: " + level.twist;
     twistBadge.hidden = false;
@@ -1364,7 +1535,10 @@ function shoot(){
   meterEl.classList.add("frozen");
   shotsLeft--;
 
-  var c = zoneCenter();
+  /* Wind compensation: the draft pushes the ball sideways, so the sweet
+     spot shifts against it — stop the needle upwind of center by an amount
+     matching the flags/gauge and the shot still finds the middle. */
+  var c = zoneCenter() - currentWind() * WIND_AIM_SHIFT;
   var half = effectiveZoneWidth()/2;
   var dist = Math.abs(meterPos - c);
   var outcome, pts = 0, msg;
@@ -1385,6 +1559,13 @@ function shoot(){
     outcome = "miss";
   }
 
+  /* Blocker #32: a shot that would have scored is swatted away when his
+     hand is covering the rim at the moment of release (defCovering is
+     kept current by the main loop). Release between blocks to score. */
+  if(level.defender && pts > 0 && defCovering){
+    outcome = "blocked"; pts = 0;
+  }
+
   if(pts > 0){
     streak++;
     var gained = pts + (streak >= 3 ? 1 : 0);
@@ -1396,7 +1577,7 @@ function shoot(){
     else msg = "Bucket! +" + gained;
   } else {
     streak = 0;
-    msg = outcome === "rim" ? "Off the rim!" : "Miss!";
+    msg = outcome === "blocked" ? "BLOCKED by #32!" : outcome === "rim" ? "Off the rim!" : "Miss!";
   }
   /* Hot start tracking: judge only the first 3 shots of the round */
   if(!hotActive && hotFirstTaken < 3){
@@ -1420,10 +1601,11 @@ function flyBall(outcome, msg){
   var targetX, targetY, kind;
   if(outcome === "swish" || outcome === "make"){ targetX = rimX; targetY = rimY + 26; kind = "in"; }
   else if(outcome === "rattle"){ targetX = rimX + 3; targetY = rimY + 24; kind = "rattle"; }
+  else if(outcome === "blocked"){ targetX = rimX + 4; targetY = rimY + 2; kind = "blocked"; }
   else if(outcome === "rim"){ targetX = rimX - 13; targetY = rimY + 6; kind = "rim"; }
   else { targetX = rimX - 58; targetY = rimY + 40; kind = "miss"; }
   /* Wind nudges the flight path sideways */
-  targetX += level.wind * 22;
+  targetX += currentWind() * 22;
   flight = {
     t: 0, dur: 0.78,
     x0: ball.x, y0: ball.y,
@@ -1450,6 +1632,13 @@ function finishFlight(){
   } else if(f.outcome === "rattle"){
     sfxRim();
     setTimeout(function(){ sfxSwish(false); sfxCheer(bigCheer); }, 140);
+  } else if(f.outcome === "blocked"){
+    sfxRim();
+    playMissClip();
+    /* Swatted: knock the ball down and away from the hand for the pause
+       before the next shot is armed. */
+    ballEl.setAttribute("transform", "translate(" + (ball.x - 30).toFixed(1) + "," + (ball.y + 58).toFixed(1) + ") rotate(140)");
+    ballShadow.setAttribute("cx", (96 + (ball.x - 30 - 118) * 0.82).toFixed(1));
   } else if(f.outcome === "rim"){
     sfxRim();
     playMissClip();
@@ -1468,7 +1657,7 @@ function finishFlight(){
     setTimeout(function(){ zoneEl.classList.remove("pulsing"); }, 600);
     showHotFeedback();
   } else {
-    showFeedback(f.msg, f.outcome === "rim" || f.outcome === "miss");
+    showFeedback(f.msg, f.outcome === "rim" || f.outcome === "miss" || f.outcome === "blocked");
   }
   ballState = "done";
   setTimeout(function(){
@@ -1478,6 +1667,7 @@ function finishFlight(){
     } else {
       ballState = "held";
       resetBall();
+      rollWind();   /* a fresh draft for the next shot */
       meterRunning = true;
       if(audioCtx) sfxSet();
     }
@@ -1685,17 +1875,29 @@ function loop(now){
   }
   hoopGroup.setAttribute("transform", "translate(" + hoopOffset.toFixed(1) + ",0)");
 
-  /* Defender hand wave */
+  /* Wind pennants flutter with the current draft */
+  updateWindFlags(now);
+
+  /* Blocker #32: his arm sweeps across the rim from the shoulder pivot
+     (382,330) — a ±16° swing moves the hand roughly ±26 SVG units over
+     the rim opening — and he jumps highest as he crosses the middle.
+     defCovering tracks the frames where the hand is over the rim;
+     shoot() reads it to block a would-be score. */
   if(level.defender){
-    var wave = Math.sin(now / 180) * 5;
-    defHand.setAttribute("transform", "translate(" + wave.toFixed(1) + ",0)");
+    var dSin = Math.sin(now / 480);
+    defAngle = dSin * 16;
+    defJumpY = -10 * (1 - Math.abs(dSin));
+    defCovering = Math.abs(defAngle) < 7;
+    defHand.setAttribute("transform", "translate(0," + defJumpY.toFixed(1) + ") rotate(" + defAngle.toFixed(1) + ",382,330)");
+  } else {
+    defCovering = false;
   }
 
   /* Ball flight: quadratic arc from the shooter's hands to the target */
   if(flight){
     flight.t += dt / flight.dur;
     var t = Math.min(flight.t, 1);
-    var x = flight.x0 + (flight.x1 - flight.x0) * t + level.wind * 10 * t * t;
+    var x = flight.x0 + (flight.x1 - flight.x0) * t + currentWind() * 10 * t * t;
     var y = flight.y0 + (flight.y1 - flight.y0) * t;
     /* parabolic lift, deepest mid-flight */
     var lift = 4 * t * (1 - t);
